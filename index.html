@@ -1,0 +1,1433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Collocation Explorer</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#faf7ff;color:#1a1a1a;min-height:100vh;margin:0;padding-top:52px}
+.app{max-width:680px;margin:0 auto;padding:0 1rem 3rem}
+/* ── FIXED NAV BAR ── */
+.top-nav{
+  position:fixed;top:0;left:0;right:0;z-index:500;
+  height:52px;
+  background:rgba(255,255,255,0.92);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+  border-bottom:1px solid #e8e0ff;
+  box-shadow:0 2px 10px rgba(124,111,247,0.08);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 1.25rem;
+}
+.nav-logo{
+  display:flex;align-items:center;gap:6px;
+  background:none;border:none;cursor:pointer;padding:0;
+  font-family:inherit;text-decoration:none;
+}
+.nav-logo-text{
+  font-size:20px;font-weight:800;letter-spacing:-0.5px;
+  background:linear-gradient(135deg,#9B59B6,#7C6FF7);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.nav-logo-icon{font-size:15px;margin-right:1px}
+.nav-verb{
+  font-size:12px;font-weight:600;color:#9990cc;
+  background:#ede9ff;border-radius:20px;
+  padding:3px 12px;border:1px solid #c4b8f7;
+  display:none;
+}
+.nav-verb.visible{display:block}
+/* ── HERO (homepage) ── */
+.hero{
+  min-height:100vh;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  text-align:center;padding:2rem 0 1rem;
+}
+.hero-logo{width:120px;height:auto;margin-bottom:1rem;display:none}
+.hero-name{
+  font-size:58px;font-weight:900;letter-spacing:-1.5px;
+  background:linear-gradient(135deg,#9B59B6,#7C6FF7);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;margin-bottom:12px;
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+}
+.hero-tagline{font-size:17px;color:#444;margin-bottom:2rem;font-weight:400;line-height:1.6;text-align:center}
+.hero-tagline .hl{font-weight:700;color:#7C6FF7}
+.hero-tagline .hl-wrong{font-weight:700;color:#aaa;text-decoration:line-through}
+.hero-search{display:flex;gap:8px;width:100%;max-width:480px;margin-bottom:1rem}
+.hero-search input{
+  flex:1;padding:13px 18px;border-radius:12px;
+  border:1.5px solid #c4b8f7;background:#fff;color:#1a1a1a;
+  font-size:15px;outline:none;transition:border-color 0.2s,box-shadow 0.2s;
+  box-shadow:0 0 0 3px rgba(124,111,247,0.12),0 2px 8px rgba(0,0,0,0.04);
+  animation:glowPulse 2.5s ease-in-out infinite;
+}
+@keyframes glowPulse{
+  0%,100%{box-shadow:0 0 0 3px rgba(124,111,247,0.12),0 2px 8px rgba(0,0,0,0.04)}
+  50%{box-shadow:0 0 0 5px rgba(124,111,247,0.22),0 2px 12px rgba(124,111,247,0.14)}
+}
+.hero-search input:focus{
+  border-color:#7C6FF7;animation:none;
+  box-shadow:0 0 0 4px rgba(124,111,247,0.2),0 2px 12px rgba(124,111,247,0.15);
+}
+.hero-search button{
+  padding:13px 24px;border-radius:12px;border:none;
+  background:#7C6FF7;color:#fff;cursor:pointer;
+  font-size:15px;font-weight:600;transition:background 0.15s;
+  box-shadow:0 2px 10px rgba(124,111,247,0.4);white-space:nowrap;
+}
+.hero-search button:hover{background:#6557e8}
+.hero-chips{display:flex;gap:8px;margin-bottom:2.5rem;flex-wrap:wrap;align-items:center;justify-content:center}
+.chip-label{font-size:13px;color:#9990cc}
+.chip{
+  padding:6px 18px;border-radius:20px;border:1.5px solid #c4b8f7;
+  background:#ede9ff;color:#6557c8;cursor:pointer;font-size:13px;font-weight:600;
+  transition:all 0.15s;
+}
+.chip:hover{border-color:#7C6FF7;color:#fff;background:#7C6FF7}
+/* how it works */
+.how-it-works{display:flex;gap:12px;width:100%;max-width:480px;margin-bottom:2rem}
+.how-step{
+  flex:1;display:flex;flex-direction:column;align-items:center;
+  padding:20px 12px;
+  background:linear-gradient(150deg,#ede9ff,#e0d8ff);
+  border-radius:16px;border:1.5px solid #c4b8f7;
+  position:relative;box-shadow:0 2px 10px rgba(124,111,247,0.1);
+}
+.how-step:not(:last-child)::after{
+  content:'→';position:absolute;right:-11px;top:50%;transform:translateY(-50%);
+  font-size:18px;color:#9B87F7;z-index:1;font-weight:700;
+}
+.how-icon{font-size:2rem;margin-bottom:10px}
+.how-text{font-size:12px;color:#4a3f8a;line-height:1.4;text-align:center;font-weight:700}
+/* footer */
+.site-footer{
+  text-align:center;font-size:11px;color:#bbb;
+  padding:1.5rem 0 1rem;line-height:1.6;
+}
+/* error msg */
+.error-msg{padding:12px 16px;background:#fff3f0;border:1px solid #f0997b;border-radius:10px;color:#4A1B0C;font-size:14px;margin-bottom:1rem;display:none;width:100%;max-width:480px;text-align:left}
+/* session area (shown after search) */
+.session-area{width:100%;margin-top:0}
+/* persistent in-session search bar */
+.session-search{display:flex;gap:8px;margin-bottom:0.6rem;padding-top:1.25rem}
+.session-search input{
+  flex:1;padding:9px 14px;border-radius:10px;
+  border:1.5px solid #c4b8f7;background:#fff;color:#1a1a1a;
+  font-size:14px;outline:none;transition:border-color 0.2s,box-shadow 0.2s;font-family:inherit;
+}
+.session-search input:focus{border-color:#7C6FF7;box-shadow:0 0 0 3px rgba(124,111,247,0.15)}
+.session-search button{
+  padding:9px 16px;border-radius:10px;border:none;
+  background:#7C6FF7;color:#fff;cursor:pointer;
+  font-size:13px;font-weight:600;transition:background 0.15s;white-space:nowrap;
+}
+.session-search button:hover{background:#6557e8}
+.session-chips{display:flex;gap:6px;margin-bottom:0.75rem;align-items:center;flex-wrap:wrap}
+.session-chips-label{font-size:12px;color:#9990cc}
+.session-chip{
+  padding:3px 12px;border-radius:20px;border:1.5px solid #c4b8f7;
+  background:#ede9ff;color:#6557c8;cursor:pointer;font-size:12px;font-weight:600;transition:all 0.15s;
+}
+.session-chip:hover{background:#7C6FF7;color:#fff;border-color:#7C6FF7}
+.session-divider{border:none;border-top:1px solid #e8e0ff;margin-bottom:1rem}
+/* tabs */
+/* tabs */
+.tab-row{display:flex;gap:6px;margin-bottom:0.5rem;flex-wrap:wrap}
+.tab{
+  padding:7px 14px;border-radius:20px;border:1px solid #d0cec8;
+  background:#fff;color:#666;cursor:pointer;font-size:13px;font-weight:500;
+  transition:all 0.15s;display:inline-flex;align-items:center;gap:5px;
+}
+.tab:hover:not(.tab-locked){border-color:#7F77DD;color:#3C3489}
+.tab.active{background:#7F77DD;border-color:#7F77DD;color:#fff;font-weight:600}
+.tab.tab-locked{opacity:0.38;cursor:not-allowed}
+.tab.tab-done .tick{display:inline-block}
+.tab .tick{display:none;font-size:11px}
+/* step label + lock nudge */
+.step-label{font-size:12px;color:#888;margin-bottom:0.3rem;padding-left:4px}
+.lock-nudge{
+  font-size:12px;color:#7C6FF7;font-weight:500;
+  margin-bottom:1.25rem;padding-left:4px;
+  display:none;align-items:center;gap:5px;
+}
+.lock-nudge.visible{display:flex;animation:nudgePop 0.25s ease}
+@keyframes nudgePop{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.stage{display:none}
+.stage.active{display:block}
+.read-instruction{background:#EEEDFE;border-radius:10px;padding:11px 14px;margin-bottom:1rem;font-size:13px;color:#4a4580;line-height:1.55;border-left:3px solid #7F77DD}
+.read-instruction em{font-style:normal;font-weight:600;color:#3C3489}
+/* legend */
+.legend{display:flex;gap:14px;margin-bottom:1rem;flex-wrap:wrap}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:13px;color:#666}
+.legend-dot{width:14px;height:14px;border-radius:3px}
+/* sentence cards */
+.sent-list{display:flex;flex-direction:column;gap:10px}
+.sent-card{background:#fff;border:1px solid #e8e6e0;border-radius:14px;padding:1rem 1.25rem;display:flex;align-items:flex-start;gap:12px;cursor:pointer;transition:border-color 0.15s,box-shadow 0.15s}
+.sent-card:hover{border-color:#7F77DD;box-shadow:0 2px 10px rgba(127,119,221,0.12)}
+.sent-img{width:54px;height:54px;border-radius:10px;flex-shrink:0;font-size:26px;display:flex;align-items:center;justify-content:center;background:#f5f4f0}
+.sent-text{flex:1}
+.sent-line{font-size:15px;color:#1a1a1a;line-height:1.65;margin-bottom:8px}
+.v-verb{background:#AFA9EC;color:#3C3489;border-radius:4px;padding:1px 5px;font-weight:600}
+.v-collocate{background:#9FE1CB;color:#085041;border-radius:4px;padding:1px 5px;font-weight:600}
+.sent-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.speak-btn{padding:4px 11px;border-radius:8px;border:1px solid #d0cec8;background:transparent;color:#666;cursor:pointer;font-size:12px;display:flex;align-items:center;gap:5px;transition:background 0.15s}
+.speak-btn:hover{background:#f5f4f0}
+.speak-btn svg{width:14px;height:14px;flex-shrink:0}
+.colloc-tag{font-size:12px;color:#999;padding:3px 9px;border:1px solid #e8e6e0;border-radius:20px}
+.sent-card-hint{font-size:11px;color:#bbb;margin-top:5px;display:flex;align-items:center;gap:4px}
+.stage-next{margin-top:1rem;text-align:right}
+/* star save button */
+.star-btn{
+  flex-shrink:0;align-self:flex-start;
+  width:40px;height:40px;border-radius:50%;border:none;
+  background:transparent;cursor:pointer;font-size:22px;
+  display:flex;align-items:center;justify-content:center;
+  transition:transform 0.15s;line-height:1;color:#ccc;
+  padding:0;margin-left:4px;
+}
+.star-btn:hover{transform:scale(1.2)}
+.star-btn.saved{color:#f5a623}
+/* toast */
+.toast{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:#1a1a1a;color:#fff;padding:10px 18px;border-radius:20px;
+  font-size:13px;font-weight:500;opacity:0;pointer-events:none;
+  transition:opacity 0.25s,transform 0.25s;z-index:300;white-space:nowrap;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+/* practice list */
+.practice-section{margin-top:1.5rem}
+.practice-title{font-size:16px;font-weight:600;color:#1a1a1a;margin-bottom:4px}
+.practice-sub{font-size:13px;color:#888;margin-bottom:1rem}
+.practice-empty{font-size:14px;color:#aaa;text-align:center;padding:1.5rem;background:#f8f7f3;border-radius:12px;border:1px dashed #e0ddd8}
+.practice-item{background:#fff;border:1px solid #e8e6e0;border-radius:12px;padding:1rem 1.25rem;margin-bottom:8px}
+.practice-item-top{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.practice-emoji{font-size:22px;flex-shrink:0}
+.practice-sentence{font-size:14px;color:#1a1a1a;line-height:1.6;flex:1}
+.practice-blank{display:inline-block;min-width:80px;border-bottom:2px solid #7F77DD;background:#EEEDFE;border-radius:4px;padding:1px 6px;font-weight:600;color:#3C3489;font-size:13px}
+.practice-blank.correct{background:#E1F5EE;border-color:#1D9E75;color:#085041}
+.practice-blank.wrong{background:#FAECE7;border-color:#D85A30;color:#4A1B0C}
+.practice-input-row{display:flex;gap:8px;align-items:center}
+.practice-input{flex:1;padding:8px 12px;border-radius:8px;border:1px solid #d0cec8;background:#f8f7f3;font-size:14px;color:#1a1a1a;outline:none;font-family:inherit}
+.practice-input:focus{border-color:#7F77DD;background:#fff}
+.practice-check-btn{padding:8px 14px;border-radius:8px;border:1px solid #7F77DD;background:#7F77DD;color:#fff;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
+.practice-check-btn:hover{background:#6860c8}
+.practice-hint{font-size:12px;margin-top:6px;display:none}
+.practice-hint.visible{display:flex;align-items:center;gap:6px;color:#D85A30}
+.practice-unsave-btn{padding:4px 10px;border-radius:8px;border:1px solid #e8e6e0;background:transparent;color:#aaa;font-size:12px;cursor:pointer;flex-shrink:0}
+.practice-unsave-btn:hover{border-color:#D85A30;color:#D85A30}
+.practice-storage-note{font-size:11px;color:#bbb;text-align:center;margin-top:12px;line-height:1.5}
+/* matching */
+.match-intro{background:#fff;border:1px solid #e8e6e0;border-radius:14px;padding:1.5rem;margin-bottom:1rem}
+.match-intro-title{font-size:17px;font-weight:600;color:#1a1a1a;margin-bottom:4px}
+.match-intro-sub{font-size:13px;color:#888;margin-bottom:1.5rem;line-height:1.5}
+.match-sentences{display:flex;flex-direction:column;gap:10px;margin-bottom:1.25rem}
+.match-row{background:#f8f7f3;border:1.5px solid #e8e6e0;border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:14px;color:#1a1a1a;line-height:1.5;transition:border-color 0.2s,background 0.2s}
+.match-row.correct-row{background:#E1F5EE;border-color:#1D9E75}
+.match-row.wrong-row{background:#FAECE7;border-color:#D85A30}
+.match-row .row-verb{background:#AFA9EC;color:#3C3489;border-radius:4px;padding:1px 6px;font-weight:600;flex-shrink:0}
+.obj-slot{display:inline-flex;align-items:center;justify-content:center;min-width:90px;height:32px;border:1.5px dashed #c0bdb5;border-radius:6px;font-size:13px;font-weight:600;color:#7F77DD;background:#fff;padding:0 8px;flex-shrink:0;cursor:pointer;transition:all 0.15s}
+.obj-slot:hover:not(.locked):not(.correct-slot){border-color:#7F77DD;background:#EEEDFE}
+.obj-slot.filled{border-style:solid;border-color:#7F77DD;background:#EEEDFE;color:#3C3489}
+.obj-slot.filled:hover{background:#dddaf8;border-color:#5a52c4}
+.obj-slot.correct-slot{border-color:#1D9E75;background:#E1F5EE;color:#085041;pointer-events:none}
+.obj-slot.wrong-slot{border-color:#D85A30;background:#FAECE7;color:#D85A30}
+.obj-pool-label{font-size:12px;font-weight:600;color:#999;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px}
+.obj-pool{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:1.25rem}
+.obj-tile{padding:8px 14px;border-radius:20px;border:1.5px solid #9FE1CB;background:#E8F9F3;color:#085041;font-size:13px;font-weight:600;cursor:pointer;user-select:none;transition:all 0.15s}
+.obj-tile:hover:not(.used){background:#1D9E75;color:#fff;border-color:#1D9E75}
+.obj-tile.selected{background:#1D9E75;color:#fff;border-color:#0d7a59;box-shadow:0 0 0 3px rgba(29,158,117,0.25)}
+.obj-tile.used{opacity:0.3;cursor:default;pointer-events:none}
+.match-check-btn{padding:10px 24px;border-radius:10px;border:none;background:#7F77DD;color:#fff;cursor:pointer;font-size:14px;font-weight:600;transition:background 0.15s;display:none}
+.match-check-btn:hover{background:#6860c8}
+.match-feedback{margin-top:1rem;padding:12px 14px;border-radius:10px;font-size:14px;line-height:1.6;display:none}
+.match-feedback.ok{background:#E1F5EE;color:#085041;border:1px solid #5DCAA5}
+.match-feedback.bad{background:#FAECE7;color:#4A1B0C;border:1px solid #F0997B}
+.try-again-btn{margin-top:10px;padding:8px 20px;border-radius:10px;border:1px solid #d0cec8;background:#fff;color:#1a1a1a;cursor:pointer;font-size:13px;font-weight:500}
+/* story gap-fill */
+.story-wrap{background:#fff;border:1px solid #e8e6e0;border-radius:14px;padding:1.5rem;margin-bottom:1rem}
+.story-header-row{margin-bottom:1.1rem}
+.story-title{font-size:17px;font-weight:600;color:#1a1a1a;margin-bottom:3px}
+.story-sub{font-size:13px;color:#888;line-height:1.5;margin-bottom:1rem}
+/* progress pips */
+.bts-progress{display:flex;gap:5px;margin-bottom:1.1rem}
+.bts-pip{height:6px;flex:1;border-radius:3px;background:#e8e6e0}
+.bts-pip.done{background:#7F77DD}
+.bts-pip.current{background:#c4b8f7}
+/* sentence-building slot area */
+.bts-build-area{
+  min-height:54px;border:2px dashed #c4b8f7;border-radius:12px;
+  background:#faf7ff;padding:10px 12px;margin-bottom:1.25rem;
+  display:flex;flex-wrap:wrap;gap:8px;align-items:center;
+}
+.bts-build-area.empty::before{content:'Tap words below to build the sentence…';color:#bbb;font-size:14px}
+.bts-slot-word{
+  padding:7px 14px;border-radius:20px;border:1.5px solid #7F77DD;
+  background:#EEEDFE;color:#3C3489;font-size:14px;font-weight:600;
+  cursor:pointer;transition:all 0.15s;white-space:nowrap;
+}
+.bts-slot-word:hover{background:#dddaf8;border-color:#5a52c4}
+.bts-slot-word.correct-word{background:#E1F5EE;border-color:#1D9E75;color:#085041;cursor:default}
+.bts-slot-word.wrong-word{background:#FAECE7;border-color:#D85A30;color:#4A1B0C}
+/* word pool */
+.bts-pool-label{font-size:12px;font-weight:600;color:#999;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px}
+.bts-pool{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:1.25rem}
+.bts-pool-word{
+  padding:8px 16px;border-radius:20px;border:1.5px solid #d0cec8;
+  background:#f8f7f3;color:#1a1a1a;font-size:14px;font-weight:500;
+  cursor:pointer;transition:all 0.15s;white-space:nowrap;
+}
+.bts-pool-word:hover{border-color:#7F77DD;background:#EEEDFE;color:#3C3489}
+.bts-pool-word.used{opacity:0.3;cursor:default;pointer-events:none}
+.bts-check-btn{width:100%;padding:13px;border-radius:12px;border:none;background:#7F77DD;color:#fff;font-size:15px;font-weight:600;cursor:pointer;transition:background 0.15s;display:none}
+.bts-check-btn:hover{background:#6860c8}
+.bts-check-btn:disabled{opacity:0.4;cursor:default}
+.bts-hint-row{display:flex;gap:8px;margin-bottom:0.9rem}
+.bts-hint-btn{
+  flex:1;padding:9px 12px;border-radius:10px;border:1.5px solid #c4b8f7;
+  background:#fff;color:#6557c8;font-size:13px;font-weight:600;cursor:pointer;
+  transition:all 0.15s;display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.bts-hint-btn:hover:not(:disabled){background:#ede9ff}
+.bts-hint-btn:disabled{opacity:0.35;cursor:default}
+.bts-answer-btn{
+  flex:1;padding:9px 12px;border-radius:10px;border:1.5px solid #e0ddd8;
+  background:#fff;color:#999;font-size:13px;font-weight:600;cursor:pointer;
+  transition:all 0.15s;display:none;align-items:center;justify-content:center;gap:6px;
+}
+.bts-answer-btn.visible{display:flex}
+.bts-answer-btn:hover{background:#faf7ff;color:#D85A30;border-color:#D85A30}
+.bts-slot-word.hinted{background:#fff3d6;border-color:#e8b923;color:#7a5c00}
+.bts-feedback{margin-top:1rem;padding:12px 14px;border-radius:10px;font-size:14px;line-height:1.6;display:none}
+.bts-feedback.ok{background:#E1F5EE;color:#085041;border:1px solid #5DCAA5;display:block}
+.bts-feedback.bad{background:#FAECE7;color:#4A1B0C;border:1px solid #F0997B;display:block}
+.bts-revealed-sentence{font-size:15px;line-height:1.7;margin-top:8px}
+.bts-next-btn{margin-top:1rem;padding:10px 24px;border-radius:10px;border:none;background:#7F77DD;color:#fff;cursor:pointer;font-size:14px;font-weight:600;transition:background 0.15s;display:none}
+.bts-next-btn:hover{background:#6860c8}
+.story-result{background:#fff;border:1px solid #e8e6e0;border-radius:14px;padding:1.5rem;display:none;margin-bottom:1rem}
+.story-result.visible{display:block}
+.story-result-title{font-size:17px;font-weight:600;color:#1a1a1a;margin-bottom:4px}
+.story-result-sub{font-size:13px;color:#666;margin-bottom:1.25rem}
+.story-colloc-list{display:flex;flex-direction:column;gap:8px;margin-bottom:1.25rem}
+.story-colloc-row{display:flex;align-items:center;gap:10px;padding:10px 12px;background:#f8f7f3;border-radius:10px}
+.story-colloc-row .scr-e{font-size:22px;flex-shrink:0}
+.story-colloc-row .scr-t{font-weight:600;font-size:14px;color:#1a1a1a}
+.story-colloc-row .scr-d{font-size:12px;color:#888;margin-top:1px}
+.read-btn,.next-btn,.restart-btn{margin-top:1rem;padding:10px 24px;border-radius:10px;border:1px solid #d0cec8;background:#fff;color:#1a1a1a;cursor:pointer;font-size:14px;font-weight:500;transition:background 0.15s}
+.read-btn:hover,.next-btn:hover,.restart-btn:hover{background:#f5f4f0}
+/* summary */
+.summary-card{background:#fff;border:1px solid #e8e6e0;border-radius:14px;padding:1.5rem}
+.colloc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-bottom:1.25rem}
+.colloc-pill{background:#f5f4f0;border-radius:10px;padding:12px 8px;text-align:center}
+.colloc-emoji{font-size:22px;margin-bottom:5px}
+.colloc-text{font-size:12px;font-weight:600;color:#1a1a1a}
+.colloc-meaning{font-size:11px;color:#888;margin-top:3px;line-height:1.4}
+.practice-tip{font-size:13px;color:#444;background:#EEEDFE;border-radius:10px;padding:12px 14px;margin-bottom:1.25rem;border-left:3px solid #7F77DD}
+/* popup */
+.popup-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:100;display:none;align-items:flex-end;justify-content:center;padding:1rem}
+.popup-overlay.open{display:flex;animation:overlayIn 0.2s ease}
+@keyframes overlayIn{from{opacity:0}to{opacity:1}}
+.popup-panel{background:#fff;border-radius:18px;width:100%;max-width:560px;padding:1.5rem;position:relative;animation:panelUp 0.25s cubic-bezier(0.34,1.56,0.64,1);max-height:90vh;overflow-y:auto}
+@keyframes panelUp{from{transform:translateY(30px);opacity:0}to{transform:none;opacity:1}}
+.popup-close{position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;border:none;background:#f5f4f0;color:#666;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.popup-close:hover{background:#e8e6e0}
+.popup-emoji{font-size:48px;text-align:center;margin-bottom:0.75rem}
+.popup-colloc{font-size:18px;font-weight:700;text-align:center;margin-bottom:4px}
+.popup-def{font-size:14px;color:#555;text-align:center;line-height:1.55;margin-bottom:1.25rem;padding:10px 14px;background:#f8f7f3;border-radius:10px}
+.popup-speak{display:flex;align-items:center;justify-content:center;gap:6px;margin:0 auto 1.25rem;padding:8px 18px;border-radius:20px;border:1.5px solid #AFA9EC;background:#EEEDFE;color:#3C3489;cursor:pointer;font-size:13px;font-weight:600;width:fit-content}
+.popup-speak:hover{background:#dddaf8}
+.popup-speak svg{width:14px;height:14px}
+.popup-related-title{font-size:12px;font-weight:600;color:#999;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px}
+.popup-related{display:flex;flex-wrap:wrap;gap:7px}
+.related-pill{padding:6px 13px;border-radius:20px;border:1px solid #e8e6e0;background:#f8f7f3;font-size:13px;color:#444;cursor:pointer;transition:all 0.15s}
+.related-pill:hover{border-color:#AFA9EC;background:#EEEDFE;color:#3C3489}
+/* real-english card */
+.popup-divider{border:none;border-top:1px solid #e8e6e0;margin:1.25rem 0}
+.real-english-label{font-size:12px;font-weight:600;color:#999;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px}
+.real-english-card{border-radius:12px;border:1.5px solid #e8e6e0;background:#f8f7f3;overflow:hidden}
+.real-english-top{padding:14px 16px 12px;display:flex;align-items:flex-start;gap:12px}
+.real-english-icon{font-size:28px;flex-shrink:0;line-height:1}
+.real-english-info{flex:1}
+.real-english-title{font-size:14px;font-weight:600;color:#1a1a1a;margin-bottom:3px}
+.real-english-desc{font-size:13px;color:#666;line-height:1.5}
+.real-english-phrase{background:#EEEDFE;border-radius:6px;padding:2px 7px;font-weight:600;color:#3C3489;font-style:normal}
+.real-english-links{border-top:1px solid #e8e6e0;display:flex}
+.real-english-link{flex:1;padding:11px 10px;display:flex;align-items:center;justify-content:center;gap:6px;font-size:13px;font-weight:600;text-decoration:none;border:none;background:transparent;cursor:pointer;transition:background 0.15s;color:#1a1a1a}
+.real-english-link:first-child{border-right:1px solid #e8e6e0}
+.real-english-link:hover{background:#EEEDFE;color:#3C3489}
+.real-english-link .link-icon{font-size:16px}
+.real-english-link .link-sub{font-size:10px;color:#999;font-weight:400;display:block}
+/* accent popover */
+.accent-popover{position:fixed;z-index:200;background:#fff;border:1px solid #d0cec8;border-radius:12px;padding:10px;box-shadow:0 4px 20px rgba(0,0,0,0.15);display:none;flex-direction:column;gap:4px;min-width:180px}
+.accent-popover.open{display:flex;animation:overlayIn 0.15s ease}
+.accent-popover-label{font-size:11px;color:#999;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;padding:0 4px 2px}
+.accent-row{display:flex;gap:5px}
+.accent-opt{flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:8px 10px;border-radius:8px;border:none;background:#f8f7f3;cursor:pointer;font-size:13px;font-weight:500;color:#1a1a1a;transition:background 0.15s;white-space:nowrap}
+.accent-opt:hover{background:#EEEDFE;color:#3C3489}
+.accent-opt.active{background:#7F77DD;color:#fff}
+.accent-opt .flag{font-size:16px}
+@media(max-width:480px){
+  .header h1{font-size:20px}
+  .sent-card{padding:0.875rem 1rem;gap:10px}
+  .sent-img{width:46px;height:46px;font-size:22px}
+  .sent-line{font-size:14px}
+  .match-row{font-size:13px}
+  .popup-panel{padding:1.25rem 1rem}
+  .bts-pool{gap:6px}
+  .bts-pool-word{font-size:13px;padding:6px 12px}
+  .bts-slot-word{font-size:13px;padding:6px 12px}
+  .story-text{font-size:15px;line-height:2.6}
+}
+</style>
+</head>
+<body>
+<!-- FIXED NAV -->
+<nav class="top-nav">
+  <button class="nav-logo" onclick="goHome()" aria-label="ColloCo home">
+    <span class="nav-logo-text">ColloCo</span>
+  </button>
+  <span class="nav-verb" id="navVerb"></span>
+</nav>
+<div class="app">
+  <!-- HERO -->
+  <div class="hero" id="heroSection">
+    <div class="hero-name">ColloCo</div>
+    
+    <div class="hero-tagline">Native speakers say <span class="hl">make a mistake</span>, not <span class="hl-wrong">do a mistake</span>. That's a collocation.</div>
+    <div class="hero-search">
+      <input type="text" id="searchInput" placeholder="Type a verb: make, take, or get"/>
+      <button onclick="handleSearch()">Search</button>
+    </div>
+    <div class="hero-chips">
+      <span class="chip-label">Try:</span>
+      <button class="chip" onclick="quickSearch('make')">make</button>
+      <button class="chip" onclick="quickSearch('take')">take</button>
+      <button class="chip" onclick="quickSearch('get')">get</button>
+    </div>
+    <div class="how-it-works">
+      <div class="how-step">
+        <div class="how-icon">📖</div>
+        <div class="how-text">Read real sentences</div>
+      </div>
+      <div class="how-step">
+        <div class="how-icon">🔍</div>
+        <div class="how-text">Discover patterns</div>
+      </div>
+      <div class="how-step">
+        <div class="how-icon">✍️</div>
+        <div class="how-text">Practise what you learned</div>
+      </div>
+    </div>
+    <div id="errorMsg" class="error-msg">Only <strong>make</strong>, <strong>take</strong>, and <strong>get</strong> are available.</div>
+  </div>
+  <!-- SESSION (shown after search) -->
+  <div id="mainContent" class="session-area" style="display:none">
+    <div class="session-search">
+      <input type="text" id="sessionSearchInput" placeholder="Search another verb…"/>
+      <button onclick="handleSessionSearch()">Search</button>
+    </div>
+    <div class="session-chips">
+      <span class="session-chips-label">Try:</span>
+      <button class="session-chip" onclick="quickSessionSearch('make')">make</button>
+      <button class="session-chip" onclick="quickSessionSearch('take')">take</button>
+      <button class="session-chip" onclick="quickSessionSearch('get')">get</button>
+    </div>
+    <div id="sessionErrorMsg" style="display:none;font-size:13px;color:#D85A30;margin-bottom:0.5rem">Only <strong>make</strong>, <strong>take</strong>, and <strong>get</strong> are available.</div>
+    <hr class="session-divider">
+    <div class="tab-row">
+      <button class="tab active" id="tab0" onclick="showStage('read',0)"><span class="tick">✅</span>1 · Read</button>
+      <button class="tab tab-locked" id="tab1" onclick="showStage('discover',1)"><span class="tick">✅</span>2 · Discover</button>
+      <button class="tab tab-locked" id="tab2" onclick="showStage('story',2)"><span class="tick">✅</span>3 · Build</button>
+      <button class="tab tab-locked" id="tab3" onclick="showStage('summary',3)"><span class="tick">✅</span>4 · Summary</button>
+    </div>
+    <div class="step-label" id="stepLabel">Step 1 of 4 — Read the sentences</div>
+    <div class="lock-nudge" id="lockNudge">🔒 Complete the previous step first!</div>
+    <!-- STAGE 1 -->
+    <div class="stage active" id="stage-read">
+      <div class="read-instruction" id="readInstruction">
+        Read these sentences carefully. What word comes after <em id="instrVerb">…</em> in each one? See if you can find a pattern.
+      </div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#AFA9EC"></div>verb</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#9FE1CB"></div>collocate</div>
+        <div class="legend-item" style="font-size:12px;color:#bbb">💡 Tap any sentence for more</div>
+      </div>
+      <div class="sent-list" id="sentList"></div>
+      <div class="stage-next"><button class="next-btn" onclick="completeStep(0);showStage('discover',1)">Next: Discover collocations →</button></div>
+    </div>
+    <!-- STAGE 2 -->
+    <div class="stage" id="stage-discover">
+      <div class="match-intro">
+        <div class="match-intro-title">🔍 Discover the Collocations</div>
+        <div class="match-intro-sub">Each sentence is missing its object. Click an object from the pool, then click the blank to place it.</div>
+        <div class="match-sentences" id="matchSentences"></div>
+        <div class="obj-pool-label">Objects — click one, then click a blank</div>
+        <div class="obj-pool" id="objPool"></div>
+        <button class="match-check-btn" id="matchCheckBtn" onclick="checkMatches()">Check my answers</button>
+        <div class="match-feedback" id="matchFeedback"></div>
+      </div>
+      <div class="stage-next" id="discoverNext" style="display:none">
+        <button class="next-btn" onclick="completeStep(1);showStage('story',2)">Next: Build the sentence →</button>
+      </div>
+    </div>
+    <!-- STAGE 3 -->
+    <div class="stage" id="stage-story">
+      <div id="storyArea"></div>
+    </div>
+    <!-- STAGE 4 -->
+    <div class="stage" id="stage-summary">
+      <div class="summary-card" id="summaryCard"></div>
+    </div>
+  </div>
+</div><!-- /session-area -->
+  <footer class="site-footer">
+    ColloCo — Built for A2 English learners &nbsp;|&nbsp; Data source: SkELL
+  </footer>
+</div><!-- /app -->
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+<!-- POPUP -->
+<div class="popup-overlay" id="popupOverlay" onclick="closePopupOnOverlay(event)">
+  <div class="popup-panel">
+    <button class="popup-close" onclick="closePopup()">✕</button>
+    <div id="popupContent"></div>
+  </div>
+</div>
+<!-- ACCENT POPOVER -->
+<div class="accent-popover" id="accentPopover">
+  <div class="accent-popover-label">Choose accent</div>
+  <button class="accent-opt active" id="accentOptUK" onclick="pickAccent('UK')">
+    <span class="flag">🇬🇧</span> UK English
+  </button>
+  <button class="accent-opt" id="accentOptUS" onclick="pickAccent('US')">
+    <span class="flag">🇺🇸</span> US English
+  </button>
+</div>
+<script>
+/* ── DATA ── */
+const DATA = {
+  make: {
+    matching:[
+      {partial:"He loves everybody and easily makes _____.", object:"friends",  emoji:"🤝"},
+      {partial:"He made _____ and he got caught.",           object:"a mistake",emoji:"❌"},
+      {partial:"When you make _____, keep it!",              object:"a promise",emoji:"🤜"},
+      {partial:"This project is really making _____.",       object:"a difference",emoji:"🔄"}
+    ],
+    sentences:[
+      {text:"I liked the school and made friends quickly.",    verb:"made", collocate:"friends",      core:"friends",  emoji:"🤝",def:"to build new friendships and get to know people",         summaryDef:"to meet new people and become their friend",related:["make connections","make acquaintances","make contacts"]},
+      {text:"The school made the right decision here.",        verb:"made", collocate:"the right decision",core:"decision",emoji:"🤔",def:"to choose correctly between options",               summaryDef:"to choose the best thing to do",related:["make a choice","make a judgement","make a call"]},
+      {text:"These people made a very big mistake.",           verb:"made", collocate:"a very big mistake",core:"mistake",emoji:"❌",def:"to do something wrong by accident or bad judgement", summaryDef:"to do something wrong by accident",related:["make an error","make a blunder","make a typo"]},
+      {text:"Mum, can I make a phone call?",                   verb:"make", collocate:"a phone call",  core:"phone call",emoji:"📞",def:"to telephone someone",                                   summaryDef:"to call someone on the phone",related:["make a video call","make an appointment","make a complaint"]},
+      {text:"A phone call often makes a difference.",         verb:"makes",collocate:"a difference",   core:"difference",emoji:"🔄",def:"to have a positive effect on a situation",               summaryDef:"to change something for the better",related:["make an impact","make a change","make progress"]},
+      {text:"They are too focused on making money.",           verb:"making",collocate:"money",         core:"money",    emoji:"💰",def:"to earn or gain money",                                  summaryDef:"to earn money",related:["make a profit","make a living","make ends meet"]},
+      {text:"One morning I woke up and made a plan.",          verb:"made", collocate:"a plan",         core:"plan",     emoji:"🗺️",def:"to decide and organise what you will do",               summaryDef:"to decide what to do next",related:["make an arrangement","make a schedule","make a list"]},
+      {text:"I don't like to make promises.",                  verb:"make", collocate:"promises",       core:"promises", emoji:"🤜",def:"to say that you will definitely do something",           summaryDef:"to say you will definitely do something",related:["make a commitment","make a pledge","make a deal"]}
+    ],
+    story:{
+      title:"Build the Sentence",
+      sentences:[
+        {words:["He","is","friendly,","outgoing,","and","makes","friends","easily."],altWords:[["He","is","outgoing,","friendly,","and","makes","friends","easily."]],verb:"makes",core:"friends",collocFull:"makes friends",emoji:"🤝",def:"to build new friendships and get to know people"},
+        {words:["I'm","afraid","of","making","a","mistake."],verb:"making",core:"mistake",collocFull:"making a mistake",emoji:"❌",def:"to do something wrong by accident or bad judgement"},
+        {words:["People","should","not","make","promises","they","cannot","keep."],verb:"make",core:"promises",collocFull:"make promises",emoji:"🤜",def:"to say that you will definitely do something"},
+        {words:["It","is","possible","to","make","a","difference."],verb:"make",core:"difference",collocFull:"make a difference",emoji:"🔄",def:"to have a positive effect on a situation"}
+      ]
+    }
+  },
+  take:{
+    matching:[
+      {partial:"Grandma decided to take _____ in using computers.", object:"a course", emoji:"📚"},
+      {partial:"He takes _____ and is annoyed by the driver.",      object:"a taxi",    emoji:"🚕"},
+      {partial:"I really think you should take _____.",             object:"a break",   emoji:"☕"},
+      {partial:"I go outside and take _____.",                       object:"a walk",    emoji:"🌳"}
+    ],
+    sentences:[
+      {text:"I took this photo about four years ago.",         verb:"took", collocate:"this photo",    core:"photo",   emoji:"📸",def:"to use a camera to capture an image",                 summaryDef:"to use a camera to make a picture",related:["take a picture","take a selfie","take a video"]},
+      {text:"I took a taxi home and went to sleep.",           verb:"took", collocate:"a taxi",        core:"taxi",    emoji:"🚕",def:"to travel somewhere by paying for a taxi",             summaryDef:"to travel by paying for a taxi",related:["take a bus","take a train","take a ride"]},
+      {text:"We took a break for lunch at 12 pm.",             verb:"took", collocate:"a break",       core:"break",   emoji:"☕",def:"to stop working for a short time to rest",            summaryDef:"to stop and rest for a little while",related:["take a rest","take a nap","take time off"]},
+      {text:"I suggest you take a breath and relax.",          verb:"take", collocate:"a breath",      core:"breath",  emoji:"🧘",def:"to breathe in slowly and deeply to feel calm",        summaryDef:"to breathe in slowly to feel calm",related:["take a deep breath","take a pause","take a moment"]},
+      {text:"Why not take a course in English for Beginners.", verb:"take", collocate:"a course",      core:"course",  emoji:"📚",def:"to study a subject by joining a class or programme",  summaryDef:"to join a class to learn something",related:["take a lesson","take a class","take an exam"]},
+      {text:"Taking a shower is always relaxing too.",         verb:"Taking",collocate:"a shower",     core:"shower",  emoji:"🚿",def:"to wash your body while standing under running water", summaryDef:"to wash your body with water",related:["take a bath","take a dip","take a swim"]},
+      {text:"After dinner I decided to take a walk.",          verb:"take", collocate:"a walk",        core:"walk",    emoji:"🌳",def:"to go for a walk for pleasure or relaxation",         summaryDef:"to walk outside for fun or rest",related:["take a stroll","take a hike","take a run"]},
+      {text:"Let's take a look somewhere else.",               verb:"take", collocate:"a look",        core:"look",    emoji:"👀",def:"to look at something carefully",                     summaryDef:"to look at something",related:["take a glance","take a peek","take a closer look"]}
+    ],
+    story:{
+      title:"Build the Sentence",
+      sentences:[
+        {words:["She","has","to","take","a","taxi","everywhere."],verb:"take",core:"taxi",collocFull:"take a taxi",emoji:"🚕",def:"to travel somewhere by paying for a taxi"},
+        {words:["I","really","think","you","should","take","a","break."],altWords:[["I","think","you","should","really","take","a","break."]],verb:"take",core:"break",collocFull:"take a break",emoji:"☕",def:"to stop working for a short time to rest"},
+        {words:["After","dinner,","I","take","a","walk."],verb:"take",core:"walk",collocFull:"take a walk",emoji:"🌳",def:"to go for a walk for pleasure or relaxation"},
+        {words:["You","can","take","a","course","in","the","evening","at","a","local","college."],verb:"take",core:"course",collocFull:"take a course",emoji:"📚",def:"to study a subject by joining a class or programme"}
+      ]
+    }
+  },
+  get:{
+    matching:[
+      {partial:"I got _____ selling magazines on the phone.",           object:"a job", emoji:"💼"},
+      {partial:"He got _____ and left the camp.",                       object:"angry", emoji:"😠"},
+      {partial:"Then he got _____ and had to turn the bus around.",     object:"lost",  emoji:"🗺️"},
+      {partial:"Come visit if you get _____.",                          object:"a chance",emoji:"🎯"}
+    ],
+    sentences:[
+      {text:"She got the job due to connections.",             verb:"got",  collocate:"the job",         core:"job",     emoji:"💼",def:"to get a job — to be chosen for a position",              summaryDef:"to be chosen to start a new job",related:["get a promotion","get a pay rise","get hired"]},
+      {text:"My friends got great results and told their friends.", verb:"got", collocate:"great results",  core:"results", emoji:"🏆",def:"to achieve high scores or a successful outcome",          summaryDef:"to do very well in something",related:["get good grades","get top marks","get a high score"]},
+      {text:"She gets angry again and chases them.",           verb:"gets", collocate:"angry",           core:"angry",   emoji:"😠",def:"to become angry — get + adjective shows a change of state", summaryDef:"to start feeling angry",related:["get upset","get frustrated","get annoyed"]},
+      {text:"Does she have to get permission to do it?",      verb:"get",  collocate:"permission",      core:"permission",emoji:"✅",def:"to receive official agreement to do something",             summaryDef:"to be allowed to do something",related:["get approval","get the go-ahead","get authorisation"]},
+      {text:"The taxi man got lost in Manchester.",            verb:"got",  collocate:"lost",            core:"lost",    emoji:"🗺️",def:"to not know where you are or which way to go",              summaryDef:"to not know where you are",related:["get confused","get stuck","get muddled"]},
+      {text:"I got the idea from a book.",                    verb:"got",  collocate:"the idea",        core:"idea",    emoji:"💡",def:"to receive or find an idea from somewhere",                  summaryDef:"to think of an idea",related:["get inspiration","get a clue","get a concept"]},
+      {text:"You won't get a second chance.",                 verb:"get",  collocate:"a second chance", core:"chance",  emoji:"🎯",def:"to receive another opportunity to try something",            summaryDef:"to have another chance to try",related:["get an opportunity","get another go","get a shot"]},
+      {text:"She just says things to get attention.",         verb:"get",  collocate:"attention",       core:"attention",emoji:"👀",def:"to make people notice you",                                  summaryDef:"to make people look at you",related:["get noticed","get a reaction","get a response"]}
+    ],
+    story:{
+      title:"Build the Sentence",
+      sentences:[
+        {words:["He's","got","a","job","in","a","factory."],verb:"got",core:"job",collocFull:"got a job",emoji:"💼",def:"to be chosen for a position"},
+        {words:["I","got","angry","at","myself,","for","many","reasons."],verb:"got",core:"angry",collocFull:"got angry",emoji:"😠",def:"to become angry"},
+        {words:["Of","course","we","got","lost","again","on","the","way","home."],verb:"got",core:"lost",collocFull:"got lost",emoji:"🗺️",def:"to not know where you are or which way to go"},
+        {words:["I","stop","in","whenever","I","get","a","chance."],verb:"get",core:"chance",collocFull:"get a chance",emoji:"🎯",def:"to receive an opportunity to do something"}
+      ]
+    }
+  }
+};
+
+/* ── STATE ── */
+let currentVerb=null, selectedObj=null, matchSlots=[];
+let btsIdxState=0; // placeholder kept intentionally unused
+
+/* ── SEARCH ── */
+function quickSearch(v){document.getElementById('searchInput').value=v;handleSearch();}
+function handleSearch(){
+  const val=document.getElementById('searchInput').value.trim().toLowerCase();
+  const err=document.getElementById('errorMsg'), main=document.getElementById('mainContent');
+  if(!DATA[val]){err.style.display='block';main.style.display='none';return;}
+  err.style.display='none';
+  _loadVerb(val);
+  document.getElementById('heroSection').style.display='none';
+  main.style.display='block';
+  showStage('read',0);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+document.getElementById('searchInput').addEventListener('keydown',e=>{if(e.key==='Enter')handleSearch();});
+
+function quickSessionSearch(v){
+  document.getElementById('sessionSearchInput').value=v;
+  handleSessionSearch();
+}
+function handleSessionSearch(){
+  const val=document.getElementById('sessionSearchInput').value.trim().toLowerCase();
+  const errEl=document.getElementById('sessionErrorMsg');
+  if(!DATA[val]){errEl.style.display='block';return;}
+  errEl.style.display='none';
+  document.getElementById('sessionSearchInput').value='';
+  _loadVerb(val);
+  showStage('read',0);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+document.addEventListener('DOMContentLoaded',()=>{
+  const si=document.getElementById('sessionSearchInput');
+  if(si) si.addEventListener('keydown',e=>{if(e.key==='Enter')handleSessionSearch();});
+});
+
+function _loadVerb(val){
+  currentVerb=val; selectedObj=null; matchSlots=[];
+  resetProgress();
+  renderSentences(); renderMatching(); renderStory();
+  document.getElementById('discoverNext').style.display='none';
+  // Show verb badge in nav
+  const badge=document.getElementById('navVerb');
+  badge.textContent=val;
+  badge.classList.add('visible');
+}
+
+function goHome(){
+  restart();
+  const badge=document.getElementById('navVerb');
+  badge.textContent='';
+  badge.classList.remove('visible');
+}
+
+/* ── PRONUNCIATION ── */
+let currentAccent = 'UK';
+let pendingSpeak = null, accentBtn = null;
+
+const VOICE_PREFS = {
+  UK: ['Google UK English Female','Microsoft Libby','Microsoft Hazel','Serena','Kate','Martha'],
+  US: ['Microsoft Aria','Google US English','Microsoft Zira','Samantha','Victoria','Allison']
+};
+
+let cachedVoices = [];
+function loadVoices() {
+  if ('speechSynthesis' in window) {
+    cachedVoices = window.speechSynthesis.getVoices();
+    if (!cachedVoices.length)
+      window.speechSynthesis.onvoiceschanged = () => { cachedVoices = window.speechSynthesis.getVoices(); };
+  }
+}
+loadVoices();
+
+function getBestVoice(accent) {
+  if (!cachedVoices.length) cachedVoices = window.speechSynthesis.getVoices();
+  const prefs = VOICE_PREFS[accent] || VOICE_PREFS.UK;
+  for (const pref of prefs) {
+    const p = pref.toLowerCase();
+    for (const v of cachedVoices) if (v.name.toLowerCase().includes(p)) return v;
+  }
+  const lang = accent === 'UK' ? 'en-GB' : 'en-US';
+  const local = cachedVoices.filter(v => v.lang.toLowerCase() === lang.toLowerCase());
+  if (local.length) return local[0];
+  return cachedVoices.find(v => v.lang.toLowerCase().startsWith('en')) || null;
+}
+
+function speak(text) {
+  if (!('speechSynthesis' in window)) return;
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  const v = getBestVoice(currentAccent);
+  if (v) { u.voice = v; u.lang = v.lang; }
+  else u.lang = currentAccent === 'UK' ? 'en-GB' : 'en-US';
+  u.rate = 0.88; u.pitch = 1.05;
+  window.speechSynthesis.speak(u);
+}
+
+function onListenClick(text, btn) {
+  pendingSpeak = text; accentBtn = btn;
+  const pop = document.getElementById('accentPopover');
+  const r = btn.getBoundingClientRect();
+  pop.style.top  = (r.bottom + 6) + 'px';
+  pop.style.left = Math.max(8, Math.min(r.left, window.innerWidth - 210)) + 'px';
+  pop.classList.add('open');
+}
+
+function pickAccent(a) {
+  currentAccent = a;
+  document.getElementById('accentOptUK').classList.toggle('active', a === 'UK');
+  document.getElementById('accentOptUS').classList.toggle('active', a === 'US');
+  document.getElementById('accentPopover').classList.remove('open');
+  if (pendingSpeak) { speak(pendingSpeak); pendingSpeak = null; }
+}
+
+document.addEventListener('click', e => {
+  const pop = document.getElementById('accentPopover');
+  if (!pop.contains(e.target) && !e.target.closest('.speak-btn') && !e.target.closest('.popup-speak'))
+    pop.classList.remove('open');
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closePopup(); document.getElementById('accentPopover').classList.remove('open'); }
+});
+
+/* ── PRACTICE LIST (localStorage) ── */
+const LS_KEY = 'collocation_practice_list';
+
+function makeStorageKey(verb, idx) {
+  return verb + '_' + idx;
+}
+
+function loadPracticeList() {
+  try { return JSON.parse(localStorage.getItem(LS_KEY)) || {}; }
+  catch(e) { return {}; }
+}
+
+function savePracticeList(list) {
+  try { localStorage.setItem(LS_KEY, JSON.stringify(list)); } catch(e) {}
+}
+
+function isSaved(key) {
+  return !!loadPracticeList()[key];
+}
+
+function toggleSave(verb, idx, btn) {
+  const key = makeStorageKey(verb, idx);
+  const list = loadPracticeList();
+  if (list[key]) {
+    delete list[key];
+    btn.textContent = '☆';
+    btn.classList.remove('saved');
+    btn.title = 'Save to practice list';
+    showToast('Removed from your practice list');
+  } else {
+    const s = DATA[verb].sentences[idx];
+    list[key] = { verb, idx, text: s.text, collocate: s.collocate, emoji: s.emoji, def: s.def };
+    btn.textContent = '★';
+    btn.classList.add('saved');
+    btn.title = 'Saved — click to remove';
+    showToast('Saved to your practice list ✅');
+  }
+  savePracticeList(list);
+}
+
+let toastTimer = null;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+function renderPracticeList() {
+  const list = loadPracticeList();
+  const items = Object.values(list);
+  if (!items.length) {
+    return `<div class="practice-empty">No saved sentences yet.<br>Tap ⭐ on any sentence to save it!</div>`;
+  }
+  return items.map((item, pi) => {
+    // Build sentence with blank where collocate was
+    const before = item.text.replace(item.collocate, '_____');
+    return `
+    <div class="practice-item" id="pitem-${pi}">
+      <div class="practice-item-top">
+        <span class="practice-emoji">${item.emoji}</span>
+        <span class="practice-sentence">${before.replace('_____','<span class="practice-blank" id="pblank-'+pi+'">_____</span>')}</span>
+      </div>
+      <div class="practice-input-row">
+        <input class="practice-input" id="pinput-${pi}" type="text"
+          placeholder="Type the missing word…"
+          data-pi="${pi}" data-answer="${item.collocate.replace(/"/g,'&quot;')}" data-emoji="${item.emoji}"/>
+        <button class="practice-check-btn" data-pi="${pi}" onclick="checkPractice(${pi})">Check</button>
+        <button class="practice-unsave-btn" data-key="${makeStorageKey(item.verb,item.idx)}" onclick="unsaveItem('${makeStorageKey(item.verb,item.idx)}',${pi})">✕</button>
+      </div>
+      <div class="practice-hint" id="phint-${pi}"></div>
+    </div>`;
+  }).join('');
+}
+
+function checkPractice(pi) {
+  const input = document.getElementById('pinput-'+pi);
+  const blank = document.getElementById('pblank-'+pi);
+  const hint  = document.getElementById('phint-'+pi);
+  const answer = input.dataset.answer.trim().toLowerCase();
+  const given  = input.value.trim().toLowerCase();
+  if (!given) return;
+  if (given === answer) {
+    blank.textContent = '✔ ' + input.dataset.answer;
+    blank.className = 'practice-blank correct';
+    input.style.display = 'none';
+    document.querySelector('.practice-check-btn[data-pi="'+pi+'"]').style.display = 'none';
+    hint.className = 'practice-hint';
+    hint.textContent = '';
+  } else {
+    blank.className = 'practice-blank wrong';
+    hint.innerHTML = input.dataset.emoji + ' Not quite — try again. Hint: <strong>' + input.dataset.answer.split(' ')[0] + '…</strong>';
+    hint.className = 'practice-hint visible';
+    setTimeout(() => { blank.className = 'practice-blank'; hint.className = 'practice-hint'; }, 1600);
+  }
+}
+
+function unsaveItem(key, pi) {
+  const list = loadPracticeList();
+  delete list[key];
+  savePracticeList(list);
+  // Re-render practice section
+  document.getElementById('practiceListArea').innerHTML = renderPracticeList();
+  // Update star in sentence list if visible
+  document.querySelectorAll('.star-btn').forEach(btn => {
+    const verb = currentVerb;
+    const idx = parseInt(btn.dataset.idx);
+    if (makeStorageKey(verb, idx) === key) {
+      btn.textContent = '☆'; btn.classList.remove('saved');
+    }
+  });
+  showToast('Removed from your practice list');
+  // Re-wire enter key on new inputs
+  document.querySelectorAll('.practice-input').forEach(inp => {
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter') checkPractice(parseInt(inp.dataset.pi)); });
+  });
+}
+
+/* ── STAGE 1: SENTENCES ── */
+function escR(s){return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}
+function highlight(text,verb,core){
+  let h=text.replace(new RegExp('('+escR(verb)+')','gi'),'<span class="v-verb">$1</span>');
+  h=h.replace(new RegExp('\\b('+escR(core)+')\\b','gi'),'<span class="v-collocate">$1</span>');
+  return h;
+}
+function renderSentences(){
+  document.getElementById('instrVerb').textContent = currentVerb;
+  const d=DATA[currentVerb];
+  document.getElementById('sentList').innerHTML=d.sentences.map((s,i)=>{
+    const key=makeStorageKey(currentVerb,i);
+    const saved=isSaved(key);
+    return `
+    <div class="sent-card" data-idx="${i}" role="button" tabindex="0">
+      <div class="sent-img">${s.emoji}</div>
+      <div class="sent-text">
+        <div class="sent-line">${highlight(s.text,s.verb,s.core||s.collocate)}</div>
+        <div class="sent-actions">
+          <button class="speak-btn" data-idx="${i}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+              <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+              <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+            </svg>listen
+          </button>
+          <span class="colloc-tag">${s.verb} + ${s.collocate}</span>
+        </div>
+        <div class="sent-card-hint">💡 Tap for details</div>
+      </div>
+      <button class="star-btn${saved?' saved':''}" data-idx="${i}" aria-label="${saved?'Remove from':'Save to'} practice list" title="${saved?'Saved — click to remove':'Save to practice list'}">${saved?'★':'☆'}</button>
+    </div>`;
+  }).join('');
+
+  document.querySelectorAll('.sent-card').forEach(card=>{
+    const i=parseInt(card.dataset.idx);
+    card.addEventListener('click',e=>{
+      if(e.target.closest('.star-btn')||e.target.closest('.speak-btn')) return;
+      openPopup(i);
+    });
+    card.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openPopup(i);}});
+  });
+  document.querySelectorAll('.speak-btn').forEach(btn=>{
+    const i=parseInt(btn.dataset.idx);
+    btn.addEventListener('click',e=>{e.stopPropagation();onListenClick(d.sentences[i].text,btn);});
+  });
+  document.querySelectorAll('.star-btn').forEach(btn=>{
+    const i=parseInt(btn.dataset.idx);
+    btn.addEventListener('click',e=>{e.stopPropagation();toggleSave(currentVerb,i,btn);});
+  });
+}
+
+/* ── POPUP ── */
+function openPopup(idx){
+  const s=DATA[currentVerb].sentences[idx];
+  const colloc=currentVerb+' '+s.collocate;
+  const ygBase='https://youglish.com/pronounce/'+encodeURIComponent(colloc)+'/english/';
+  document.getElementById('popupContent').innerHTML=`
+    <div class="popup-emoji">${s.emoji}</div>
+    <div class="popup-colloc">${colloc}</div>
+    <button class="popup-speak" id="popupSpeakBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+        <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+        <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+      </svg>Listen: ${colloc}
+    </button>
+    <div class="popup-related-title">Other things you can ${currentVerb}:</div>
+    <div class="popup-related" id="popupRelated"></div>
+    <hr class="popup-divider">
+    <div class="real-english-label">🎬 See it used in real English</div>
+    <div class="real-english-card">
+      <div class="real-english-top">
+        <div class="real-english-icon">🎙️</div>
+        <div class="real-english-info">
+          <div class="real-english-title">Hear native speakers say <em class="real-english-phrase">${colloc}</em></div>
+          <div class="real-english-desc">YouGlish finds real YouTube videos where people use this phrase.</div>
+        </div>
+      </div>
+      <div class="real-english-links">
+        <a class="real-english-link" href="${ygBase}uk" target="_blank" rel="noopener">
+          <span class="link-icon">🇬🇧</span><span>UK English<span class="link-sub">British speakers</span></span>
+        </a>
+        <a class="real-english-link" href="${ygBase}us" target="_blank" rel="noopener">
+          <span class="link-icon">🇺🇸</span><span>US English<span class="link-sub">American speakers</span></span>
+        </a>
+      </div>
+    </div>
+    <div style="font-size:11px;color:#bbb;text-align:center;margin-top:6px">Opens YouGlish.com in a new tab · Free · No login</div>`;
+  document.getElementById('popupSpeakBtn').addEventListener('click',e=>{e.stopPropagation();onListenClick(colloc,document.getElementById('popupSpeakBtn'));});
+  const rel=document.getElementById('popupRelated');
+  s.related.forEach(r=>{
+    const p=document.createElement('button');p.className='related-pill';p.textContent=r;
+    p.addEventListener('click',e=>{e.stopPropagation();onListenClick(r,p);});
+    rel.appendChild(p);
+  });
+  document.getElementById('popupOverlay').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closePopup(){document.getElementById('popupOverlay').classList.remove('open');document.body.style.overflow='';}
+function closePopupOnOverlay(e){if(e.target===document.getElementById('popupOverlay'))closePopup();}
+
+/* ── STAGE 2: MATCHING ── */
+function renderMatching(){
+  const items=DATA[currentVerb].matching;
+  matchSlots=items.map(item=>({correct:item.object,filled:null}));
+  selectedObj=null;
+  const pool=shuffle(items.map(i=>i.object));
+  document.getElementById('matchSentences').innerHTML=items.map((item,i)=>{
+    const parts=item.partial.split('_____');
+    return `<div class="match-row" id="mrow-${i}">
+      <span>${parts[0]}</span>
+      <span class="obj-slot" id="mslot-${i}" onclick="slotClick(${i})">_____</span>
+      <span>${parts[1]||''}</span>
+    </div>`;
+  }).join('');
+  document.getElementById('objPool').innerHTML=pool.map((obj,idx)=>
+    `<button class="obj-tile" data-obj="${idx}" onclick="selectObj(${idx})">${obj}</button>`
+  ).join('');
+  window._matchPool=pool;
+  document.getElementById('matchCheckBtn').style.display='none';
+  document.getElementById('matchFeedback').style.display='none';
+}
+
+function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function getTileByObj(obj){let f=null;document.querySelectorAll('.obj-tile').forEach(t=>{if(t.textContent.trim()===obj)f=t;});return f;}
+
+function selectObj(idx){
+  const obj=window._matchPool[idx];
+  if(selectedObj===obj){selectedObj=null;document.querySelectorAll('.obj-tile').forEach(t=>t.classList.remove('selected'));return;}
+  selectedObj=obj;
+  document.querySelectorAll('.obj-tile').forEach(t=>t.classList.remove('selected'));
+  const tile=getTileByObj(obj);if(tile)tile.classList.add('selected');
+}
+
+// Click on a slot: if empty and something selected → place it; if filled → remove it
+function slotClick(slotIdx){
+  const slot=document.getElementById('mslot-'+slotIdx);
+  // If slot is locked (correct), ignore
+  if(slot.classList.contains('correct-slot')) return;
+
+  // If slot is filled and nothing selected → remove (return to pool)
+  if(matchSlots[slotIdx].filled && !selectedObj){
+    const removed=matchSlots[slotIdx].filled;
+    matchSlots[slotIdx].filled=null;
+    slot.textContent='_____';
+    slot.classList.remove('filled','wrong-slot');
+    // Clear hint
+    const hint=document.getElementById('mhint-'+slotIdx);
+    if(hint){hint.textContent='';hint.classList.remove('visible');}
+    // Return tile to pool
+    const tile=getTileByObj(removed);
+    if(tile){tile.classList.remove('used','selected');}
+    // Hide check button if not all filled
+    if(!matchSlots.every(s=>s.filled!==null))
+      document.getElementById('matchCheckBtn').style.display='none';
+    return;
+  }
+
+  // Place selected obj into slot
+  if(!selectedObj) return;
+  const obj=selectedObj;
+
+  // Free previously filled value in this slot
+  const prev=matchSlots[slotIdx].filled;
+  if(prev){
+    const ot=getTileByObj(prev);if(ot)ot.classList.remove('used','selected');
+  }
+  // Remove obj from any other slot it was in
+  matchSlots.forEach((s,i)=>{
+    if(i!==slotIdx&&s.filled===obj){
+      s.filled=null;
+      const el=document.getElementById('mslot-'+i);
+      el.textContent='_____';el.classList.remove('filled','wrong-slot');
+      const h=document.getElementById('mhint-'+i);
+      if(h){h.textContent='';h.classList.remove('visible');}
+    }
+  });
+
+  matchSlots[slotIdx].filled=obj;
+  slot.textContent=obj;
+  slot.classList.add('filled');
+  slot.classList.remove('wrong-slot');
+
+  const tile=getTileByObj(obj);
+  if(tile){tile.classList.remove('selected');tile.classList.add('used');}
+  selectedObj=null;
+
+  if(matchSlots.every(s=>s.filled!==null))
+    document.getElementById('matchCheckBtn').style.display='inline-block';
+}
+
+// Keep placeObj as alias for backwards compat (called from onclick in old HTML, now slotClick handles it)
+function placeObj(slotIdx){ slotClick(slotIdx); }
+
+function checkMatches(){
+  const items=DATA[currentVerb].matching;
+  let allOk=true;
+
+  matchSlots.forEach((slot,i)=>{
+    const slotEl=document.getElementById('mslot-'+i);
+    const rowEl=document.getElementById('mrow-'+i);
+    const hintEl=document.getElementById('mhint-'+i);
+    // Reset row classes
+    rowEl.classList.remove('correct-row','wrong-row');
+    slotEl.classList.remove('filled','wrong-slot');
+
+    if(slot.filled===slot.correct){
+      slotEl.classList.add('correct-slot');
+      rowEl.classList.add('correct-row');
+      slotEl.innerHTML='✔ '+slot.correct;
+      if(hintEl){hintEl.textContent='';hintEl.classList.remove('visible');}
+    } else {
+      allOk=false;
+      rowEl.classList.add('wrong-row');
+      slotEl.classList.remove('filled');
+      slotEl.classList.add('wrong-slot');
+      // Show emoji quietly inside the blank as a hint
+      const emoji = items[i].emoji || '?';
+      slotEl.textContent = emoji;
+      if(hintEl){hintEl.textContent='';hintEl.classList.remove('visible');}
+      // Return wrong answer tile to pool (but keep emoji in slot)
+      const wrongObj = slot.filled;
+      slot.filled = null;
+      if(wrongObj){
+        const tile = getTileByObj(wrongObj);
+        if(tile) tile.classList.remove('used','selected');
+      }
+    }
+  });
+
+  document.getElementById('matchCheckBtn').style.display='none';
+  const fb=document.getElementById('matchFeedback');
+  fb.style.display='block';
+
+  if(allOk){
+    fb.className='match-feedback ok';
+    fb.innerHTML='<strong>✔ All correct!</strong> Great — now try the story activity!';
+    document.getElementById('discoverNext').style.display='block';
+  } else {
+    fb.className='match-feedback bad';
+    fb.innerHTML='<strong>Not quite!</strong> Look at the images for a hint. Try again 💪';
+  }
+}
+function resetMatching(){renderMatching();}
+
+/* ── STAGE 3: STORY ── */
+let btsIdx = 0;        // which sentence in the set we're on
+let btsBuilt = [];      // words placed so far, in order
+let btsCorrectCount = 0;
+let btsWordPool = [];   // {word, used}
+let btsHintCount = 0;   // how many hint words revealed for current sentence
+
+function renderStory(){
+  btsIdx = 0; btsCorrectCount = 0;
+  renderBtsSentence();
+}
+
+function shuffleWords(arr){
+  const a = arr.map((w,i)=>({word:w,origIdx:i}));
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+function renderBtsSentence(){
+  const st = DATA[currentVerb].story;
+  const area = document.getElementById('storyArea');
+  const total = st.sentences.length;
+
+  if (btsIdx >= total) { showStoryResult(); return; }
+
+  const s = st.sentences[btsIdx];
+  btsBuilt = [];
+  btsWordPool = shuffleWords(s.words);
+  btsHintCount = 0;
+
+  const pips = Array.from({length:total},(_,i)=>
+    `<div class="bts-pip ${i<btsIdx?'done':i===btsIdx?'current':''}"></div>`
+  ).join('');
+
+  area.innerHTML =
+    '<div class="story-wrap">'+
+      '<div class="story-header-row">'+
+        '<div class="story-title">🧩 Build the Sentence</div>'+
+        '<div class="story-sub">Tap the words in the correct order. Sentence '+(btsIdx+1)+' of '+total+'.</div>'+
+      '</div>'+
+      '<div class="bts-progress">'+pips+'</div>'+
+      '<div class="bts-build-area empty" id="btsBuildArea"></div>'+
+      '<div class="bts-hint-row">'+
+        '<button class="bts-hint-btn" id="btsHintBtn" onclick="giveBtsHint()">💡 Show next word</button>'+
+        '<button class="bts-answer-btn" id="btsAnswerBtn" onclick="showBtsAnswer()">🔓 Show full answer</button>'+
+      '</div>'+
+      '<div class="bts-pool-label">Tap a word to add it to the sentence</div>'+
+      '<div class="bts-pool" id="btsPool"></div>'+
+      '<button class="bts-check-btn" id="btsCheckBtn" onclick="checkBts()">Check ✓</button>'+
+      '<div class="bts-feedback" id="btsFeedback"></div>'+
+    '</div>'+
+    '<div class="story-result" id="storyResult"></div>';
+
+  renderBtsPool();
+  renderBtsBuildArea();
+}
+
+function renderBtsPool(){
+  const pool = document.getElementById('btsPool');
+  pool.innerHTML = btsWordPool.map((item,i)=>
+    `<button class="bts-pool-word" id="btsPoolWord-${i}" data-i="${i}">${item.word}</button>`
+  ).join('');
+  pool.querySelectorAll('.bts-pool-word').forEach(btn=>{
+    btn.addEventListener('click', ()=> placeBtsWord(parseInt(btn.dataset.i)));
+  });
+}
+
+function placeBtsWord(poolIdx){
+  const item = btsWordPool[poolIdx];
+  if (item.usedInBuild) return;
+  item.usedInBuild = true;
+  btsBuilt.push(poolIdx);
+  document.getElementById('btsPoolWord-'+poolIdx).classList.add('used');
+  renderBtsBuildArea();
+}
+
+function removeBtsWord(buildPos){
+  const poolIdx = btsBuilt[buildPos];
+  if (btsWordPool[poolIdx].hinted) return; // hinted words are locked, cannot be removed
+  btsWordPool[poolIdx].usedInBuild = false;
+  btsBuilt.splice(buildPos,1);
+  const poolBtn = document.getElementById('btsPoolWord-'+poolIdx);
+  if (poolBtn) poolBtn.classList.remove('used');
+  renderBtsBuildArea();
+}
+
+// Reveal the next correct word, one at a time, placed directly into the build area
+function giveBtsHint(){
+  const s = DATA[currentVerb].story.sentences[btsIdx];
+  // Find the next position in the correct sentence that isn't already correctly filled
+  const targetWord = s.words[btsHintCount];
+  if (targetWord === undefined) return; // no more words to hint
+
+  // If that position is already correctly filled by the learner, just advance the hint pointer
+  const alreadyCorrect = btsBuilt[btsHintCount] !== undefined &&
+    btsWordPool[btsBuilt[btsHintCount]].word === targetWord;
+
+  if (!alreadyCorrect){
+    // Remove any word currently sitting at this position (and everything after it)
+    // so the hint can take its correct place without duplicate words
+    while (btsBuilt.length > btsHintCount){
+      const poolIdx = btsBuilt.pop();
+      btsWordPool[poolIdx].usedInBuild = false;
+      const poolBtn = document.getElementById('btsPoolWord-'+poolIdx);
+      if (poolBtn) poolBtn.classList.remove('used');
+    }
+    // Find an unused pool word matching the target word and place it
+    const poolIdx = btsWordPool.findIndex(item => item.word === targetWord && !item.usedInBuild);
+    if (poolIdx !== -1){
+      btsWordPool[poolIdx].usedInBuild = true;
+      btsWordPool[poolIdx].hinted = true;
+      btsBuilt.push(poolIdx);
+      const poolBtn = document.getElementById('btsPoolWord-'+poolIdx);
+      if (poolBtn) poolBtn.classList.add('used');
+    }
+  }
+
+  btsHintCount++;
+  renderBtsBuildArea();
+
+  const hintBtn = document.getElementById('btsHintBtn');
+  const answerBtn = document.getElementById('btsAnswerBtn');
+  if (btsHintCount >= s.words.length){
+    hintBtn.disabled = true;
+    hintBtn.textContent = '💡 All words shown';
+  } else {
+    hintBtn.textContent = '💡 Show next word ('+btsHintCount+'/'+s.words.length+')';
+  }
+  // After 2 or more hints used, offer the full answer option for learners who are stuck
+  if (btsHintCount >= 2) answerBtn.classList.add('visible');
+}
+
+// Reveal the complete correct sentence at once for learners who are very stuck
+function showBtsAnswer(){
+  const s = DATA[currentVerb].story.sentences[btsIdx];
+  // Clear everything currently built
+  btsBuilt.forEach(poolIdx => { btsWordPool[poolIdx].usedInBuild = false; });
+  btsBuilt = [];
+  document.querySelectorAll('.bts-pool-word').forEach(b=>b.classList.remove('used'));
+
+  // Place every word in correct order, marked as hinted (locked)
+  s.words.forEach(word=>{
+    const poolIdx = btsWordPool.findIndex(item => item.word === word && !item.usedInBuild);
+    if (poolIdx !== -1){
+      btsWordPool[poolIdx].usedInBuild = true;
+      btsWordPool[poolIdx].hinted = true;
+      btsBuilt.push(poolIdx);
+      const poolBtn = document.getElementById('btsPoolWord-'+poolIdx);
+      if (poolBtn) poolBtn.classList.add('used');
+    }
+  });
+  btsHintCount = s.words.length;
+  document.getElementById('btsHintBtn').disabled = true;
+  document.getElementById('btsHintBtn').textContent = '💡 All words shown';
+  renderBtsBuildArea();
+}
+
+function renderBtsBuildArea(){
+  const area = document.getElementById('btsBuildArea');
+  const s = DATA[currentVerb].story.sentences[btsIdx];
+  if (btsBuilt.length === 0){
+    area.classList.add('empty');
+    area.innerHTML = '';
+  } else {
+    area.classList.remove('empty');
+    area.innerHTML = btsBuilt.map((poolIdx,pos)=>{
+      const item = btsWordPool[poolIdx];
+      const hintedClass = item.hinted ? ' hinted' : '';
+      return `<button class="bts-slot-word${hintedClass}" data-pos="${pos}">${item.word}</button>`;
+    }).join('');
+    area.querySelectorAll('.bts-slot-word').forEach(btn=>{
+      btn.addEventListener('click', ()=> removeBtsWord(parseInt(btn.dataset.pos)));
+    });
+  }
+  // Show check button only when all words placed
+  const btn = document.getElementById('btsCheckBtn');
+  btn.style.display = (btsBuilt.length === s.words.length) ? 'block' : 'none';
+}
+
+function checkBts(){
+  const s = DATA[currentVerb].story.sentences[btsIdx];
+  const fb = document.getElementById('btsFeedback');
+  const builtWords = btsBuilt.map(poolIdx => btsWordPool[poolIdx].word);
+
+  // Collect every accepted word order for this sentence
+  const acceptedOrders = [s.words];
+  if (s.altWords) acceptedOrders.push(...s.altWords);
+
+  const matchedOrder = acceptedOrders.find(order =>
+    builtWords.length === order.length && builtWords.every((w,i)=> w === order[i])
+  );
+  const isCorrect = !!matchedOrder;
+
+  if (isCorrect){
+    btsCorrectCount++;
+    document.querySelectorAll('.bts-slot-word').forEach(b=>b.classList.add('correct-word'));
+    document.getElementById('btsCheckBtn').style.display='none';
+    document.getElementById('btsHintBtn').style.display='none';
+    document.getElementById('btsAnswerBtn').style.display='none';
+    const highlighted = highlight(matchedOrder.join(' '), s.verb, s.core);
+    fb.className = 'bts-feedback ok';
+    fb.innerHTML = '<strong>✔ Correct!</strong><div class="bts-revealed-sentence">'+highlighted+'</div>'+
+      '<button class="bts-next-btn" style="display:block" onclick="nextBtsSentence()">'+
+      (btsIdx+1 < DATA[currentVerb].story.sentences.length ? 'Next sentence →' : 'See summary →')+
+      '</button>';
+  } else {
+    // Mark correct vs wrong positions against the closest matching accepted order
+    // (use s.words as the reference for position feedback)
+    document.querySelectorAll('.bts-slot-word').forEach((btn,i)=>{
+      if (builtWords[i] === s.words[i]) btn.classList.add('correct-word');
+      else btn.classList.add('wrong-word');
+    });
+    fb.className = 'bts-feedback bad';
+    fb.innerHTML = '<strong>Not quite!</strong> Some words are in the wrong position (shown in red). Try again 💪';
+    // Allow retry: clicking any slot word removes it and re-enables editing
+    setTimeout(()=>{
+      document.querySelectorAll('.bts-slot-word').forEach(b=>{
+        b.classList.remove('correct-word','wrong-word');
+      });
+    }, 1600);
+  }
+}
+
+function nextBtsSentence(){
+  btsIdx++;
+  renderBtsSentence();
+}
+
+function showStoryResult(){
+  completeStep(2);
+  const st = DATA[currentVerb].story;
+  const res = document.getElementById('storyResult');
+  res.innerHTML =
+    '<div class="story-result-title">🎉 Great job! Here are the collocations you practised:</div>'+
+    '<div class="story-result-sub">You built all '+st.sentences.length+' sentences correctly.</div>'+
+    '<div class="story-colloc-list">'+
+      st.sentences.map(s=>
+        '<div class="story-colloc-row">'+
+          '<span class="scr-e">'+s.emoji+'</span>'+
+          '<span><div class="scr-t">'+s.collocFull+'</div><div class="scr-d">'+s.def+'</div></span>'+
+        '</div>'
+      ).join('')+
+    '</div>'+
+    '<button class="next-btn" onclick="showStage(\'summary\',3)" style="width:100%;background:#7F77DD;color:#fff;border-color:#7F77DD;font-weight:600">Go to Summary →</button>';
+  res.classList.add('visible');
+  res.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+
+
+/* ── STAGE 4: SUMMARY ── */
+function renderSummary(){
+  const d=DATA[currentVerb];
+  const tips={make:"Try: \"I need to make a decision about...\" or \"I made a mistake when...\"",
+    take:"Try: \"Yesterday I took a ___.\" or \"Every morning I take a ___.\"",
+    get:"Try: \"I get ___ when...\" or \"Last week I got ___.\" Use an adjective or noun."};
+  document.getElementById('summaryCard').innerHTML=`
+    <div style="font-size:18px;font-weight:600;margin-bottom:4px">Your session summary</div>
+    <div style="font-size:14px;color:#666;margin-bottom:1.25rem">Collocations with <span style="background:#AFA9EC;color:#3C3489;border-radius:4px;padding:1px 7px;font-weight:600">${currentVerb}</span> that you practised</div>
+    <div class="colloc-grid">${d.sentences.map(s=>`
+      <div class="colloc-pill">
+        <div class="colloc-emoji">${s.emoji}</div>
+        <div class="colloc-text">${currentVerb} + ${s.collocate}</div>
+        <div class="colloc-meaning">${s.summaryDef||s.def.split('—')[0].trim()}</div>
+      </div>`).join('')}</div>
+    <div class="practice-tip">💡 ${tips[currentVerb]}</div>
+    <div class="practice-section">
+      <div class="practice-title">⭐ My Practice List</div>
+      <div class="practice-sub">Fill in the missing collocate for each saved sentence.</div>
+      <div id="practiceListArea">${renderPracticeList()}</div>
+      <div class="practice-storage-note">Your list is saved on this device. Clearing your browser data will reset it.</div>
+    </div>
+    <button class="restart-btn" style="margin-top:1.5rem" onclick="restart()">Try another verb</button>`;
+
+  // Wire enter key on practice inputs
+  document.querySelectorAll('.practice-input').forEach(inp => {
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter') checkPractice(parseInt(inp.dataset.pi)); });
+  });
+}
+
+/* ── NAV & PROGRESS ── */
+const STEP_LABELS = [
+  'Step 1 of 4 — Read the sentences',
+  'Step 2 of 4 — Discover the pattern',
+  'Step 3 of 4 — Build the sentence',
+  'Step 4 of 4 — Your summary'
+];
+let stepsCompleted = 0;
+let lockNudgeTimer = null;
+
+function showLockNudge() {
+  const nudge = document.getElementById('lockNudge');
+  nudge.classList.add('visible');
+  clearTimeout(lockNudgeTimer);
+  lockNudgeTimer = setTimeout(() => nudge.classList.remove('visible'), 2500);
+}
+
+function completeStep(stepIdx) {
+  if (stepIdx + 1 > stepsCompleted) stepsCompleted = stepIdx + 1;
+  document.getElementById('tab' + stepIdx).classList.add('tab-done');
+  const next = document.getElementById('tab' + (stepIdx + 1));
+  if (next) next.classList.remove('tab-locked');
+}
+
+function showStage(id, tabIdx) {
+  // If tab is locked, show nudge and bail
+  const tabEl = document.getElementById('tab' + tabIdx);
+  if (tabEl && tabEl.classList.contains('tab-locked')) {
+    showLockNudge();
+    return;
+  }
+  document.getElementById('lockNudge').classList.remove('visible');
+  document.querySelectorAll('.stage').forEach(s => s.classList.remove('active'));
+  [0,1,2,3].forEach(i => document.getElementById('tab'+i).classList.remove('active'));
+  document.getElementById('stage-'+id).classList.add('active');
+  tabEl.classList.add('active');
+  document.getElementById('stepLabel').textContent = STEP_LABELS[tabIdx];
+  if (id === 'summary') { completeStep(2); renderSummary(); }
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function resetProgress() {
+  stepsCompleted = 0;
+  [0,1,2,3].forEach(i => {
+    const t = document.getElementById('tab'+i);
+    t.classList.remove('active','tab-done');
+    if (i > 0) t.classList.add('tab-locked');
+    else t.classList.remove('tab-locked');
+  });
+  document.getElementById('tab0').classList.add('active');
+  document.getElementById('stepLabel').textContent = STEP_LABELS[0];
+  document.getElementById('lockNudge').classList.remove('visible');
+}
+
+function restart(){
+  document.getElementById('mainContent').style.display='none';
+  document.getElementById('heroSection').style.display='flex';
+  document.getElementById('searchInput').value='';
+  document.getElementById('searchInput').focus();
+  const badge=document.getElementById('navVerb');
+  badge.textContent=''; badge.classList.remove('visible');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+</script>
+</body>
+</html>
